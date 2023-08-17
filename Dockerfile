@@ -1,6 +1,6 @@
 FROM python:3.8-slim
 
-RUN apt-get -y update && apt-get -y install gcc curl make
+RUN apt-get -y update && apt-get -y install gcc curl make vim
 
 RUN pip install --upgrade pip
 # Required by TA-Lib and numba

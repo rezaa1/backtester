@@ -33,77 +33,60 @@ login_layout = html.Div([
 main_layout = html.Div([
     dcc.Dropdown(id='symbol-dropdown', options=[], placeholder='Select a symbol'),
     html.Button('Scan', id='scan-button', n_clicks=0),
-    dcc.Graph(id='candlestick-graph')
+    dcc.Graph(id='candlestick-graph'),
+    html.Div(id='backtest-result')
 ])
 
-@app.callback(Output('page-content', 'children'), Input('url', 'pathname'))
-def display_page(pathname):
+@app.callback(Output('page-content', 'children'),
+              Input('url', 'pathname'),
+              State('username-input', 'value'),
+              State('password-input', 'value'),
+              prevent_initial_call=True)
+def display_page(pathname, username, password):
     if pathname == '/':
-        return login_layout
+        if username in VALID_USERNAME_PASSWORD_PAIRS and password == VALID_USERNAME_PASSWORD_PAIRS[username]:
+            return dcc.Location(pathname='/main', id='dummy')
+        else:
+            return html.Div('Invalid credentials')
     elif pathname == '/main':
         return main_layout
 
-# Helper function to generate options for dropdown
-def generate_dropdown_options(symbols):
-    return [{'label': symbol, 'value': symbol} for symbol in symbols]
-
-app.layout = html.Div([
-    html.H1('Authentication and Scanner Example'),
-    html.Div([
-        dcc.Input(id='username-input', placeholder='Username', type='text', style={'marginRight': '10px'}),
-        dcc.Input(id='password-input', placeholder='Password', type='password', style={'marginRight': '10px'}),
-        html.Button('Login', id='login-button', n_clicks=0)
-    ], style={'marginBottom': '20px'}),
-    html.Div(id='login-result'),
-    dcc.Dropdown(id='symbol-dropdown', options=[], placeholder='Select a symbol'),
-    html.Button('Scan', id='scan-button', n_clicks=0),
-    dcc.Graph(id='candlestick-graph')
-])
-
-@app.callback(
-    Output('login-result', 'children'),
-    Input('login-button', 'n_clicks'),
-    State('username-input', 'value'),
-    State('password-input', 'value')
-)
-def authenticate(n_clicks, entered_username, entered_password):
-    # Authentication code here
-    pass
-
-@app.callback(
-    Output('symbol-dropdown', 'options'),
-    Input('scan-button', 'n_clicks')
-)
-def scan_for_symbols(n_clicks):
+@app.callback(Output('symbol-dropdown', 'options'),
+              Input('scan-button', 'n_clicks'),
+              State('symbol-dropdown', 'options'),
+              State('symbol-dropdown', 'value'))
+def scan_symbols(n_clicks, existing_options, selected_symbol):
     if n_clicks > 0:
-        scanner = StockScanner()  # Initialize your scanner
-        symbols_with_signals,sell = scanner.scan()  # Get symbols with buy/sell signals
-        symbols_with_signals.extend(sell)
-        return generate_dropdown_options(symbols_with_signals)
+        # Replace this with your scanner logic
+        symbols_with_signals = ["AAPL", "GOOGL", "MSFT"]  # Example list of symbols with signals
+        new_options = [{'label': symbol, 'value': symbol} for symbol in symbols_with_signals]
+        return new_options
+    return existing_options
 
-@app.callback(
-    Output('candlestick-graph', 'figure'),
-    Input('symbol-dropdown', 'value')
-)
-def display_candlestick_graph(selected_symbol):
+@app.callback(Output('candlestick-graph', 'figure'),
+              Input('symbol-dropdown', 'value'))
+def display_candlestick_chart(selected_symbol):
     if selected_symbol:
-        # Fetch historical data for selected_symbol using yfinance
-        data = yf.download(selected_symbol, start='2023-01-01', progress=False)
-        
-        # Create candlestick chart using Plotly
+        # Replace this with your candlestick chart logic
+        spy = yf.download(selected_symbol, start='2023-01-01', progress=False)
         fig = go.Figure(data=[go.Candlestick(
-            x=data.index,
-            open=data['Open'],
-            high=data['High'],
-            low=data['Low'],
-            close=data['Close']
+            x=spy.index,
+            open=spy['Open'],
+            high=spy['High'],
+            low=spy['Low'],
+            close=spy['Close']
         )])
-
-        # Add buy and sell signals to the chart (replace with your signals logic)
-        # Add backtest results (replace with your backtester logic)
-        # Customize the layout
-        
         return fig
+
+@app.callback(Output('backtest-result', 'children'),
+              Input('symbol-dropdown', 'value'))
+def display_backtest_result(selected_symbol):
+    if selected_symbol:
+        # Replace this with your backtester logic
+        #backtester = BackTester()
+        #result = backtester.run_backtest(selected_symbol)
+        result = {"test": "success"}
+        return html.Div(f'Backtest Result: {result}')
 
 if __name__ == '__main__':
     app.run_server(debug=True)
