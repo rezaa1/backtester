@@ -177,7 +177,7 @@ class StockScanner:
         )
         if plot_show:
             fig.show()
-        else
+        else:
             return fig
         
     def update_data(self, symbol):
