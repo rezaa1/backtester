@@ -1,67 +1,80 @@
-import yfinance as yf
 import dash
+import dash_bootstrap_components as dbc
 from dash import dcc, html
-from dash.dependencies import Input, Output
-import dash_auth
+from dash.dependencies import Input, Output, State
+from scanner import StockScanner  # Import your scanner class
+from backtester import BackTester  # Import your backtester class
+import yfinance as yf
 import plotly.graph_objects as go
 
-# List of symbols
-symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN']
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-
-# Initialize the Dash app
-app = dash.Dash(__name__)
-
-# Define the authentication parameters
 VALID_USERNAME_PASSWORD_PAIRS = {
-    'reza': 'Mr@120'
+    'user1': 'password1',
+    'user2': 'password2',
+    'user3': 'password3'
 }
 
-# Use dash_auth to add authentication to the app
-auth = dash_auth.BasicAuth(
-    app,
-    VALID_USERNAME_PASSWORD_PAIRS
-)
+# Helper function to generate options for dropdown
+def generate_dropdown_options(symbols):
+    return [{'label': symbol, 'value': symbol} for symbol in symbols]
 
-# Layout of the app
 app.layout = html.Div([
-    dcc.Dropdown(
-        id='symbol-dropdown',
-        options=[{'label': symbol, 'value': symbol} for symbol in symbols],
-        value='AAPL'
-    ),
-    dcc.Graph(id='candlestick-chart')
+    html.H1('Authentication and Scanner Example'),
+    html.Div([
+        dcc.Input(id='username-input', placeholder='Username', type='text', style={'marginRight': '10px'}),
+        dcc.Input(id='password-input', placeholder='Password', type='password', style={'marginRight': '10px'}),
+        html.Button('Login', id='login-button', n_clicks=0)
+    ], style={'marginBottom': '20px'}),
+    html.Div(id='login-result'),
+    dcc.Dropdown(id='symbol-dropdown', options=[], placeholder='Select a symbol'),
+    html.Button('Scan', id='scan-button', n_clicks=0),
+    dcc.Graph(id='candlestick-graph')
 ])
 
-# Callback to update the candlestick chart based on the selected symbol
 @app.callback(
-    Output('candlestick-chart', 'figure'),
-    [Input('symbol-dropdown', 'value')]
+    Output('login-result', 'children'),
+    Input('login-button', 'n_clicks'),
+    State('username-input', 'value'),
+    State('password-input', 'value')
 )
-def update_chart(selected_symbol):
-    # Fetch historical price data for the selected symbol
-    data = yf.download(selected_symbol, start='2023-01-01', progress=False)
+def authenticate(n_clicks, entered_username, entered_password):
+    # Authentication code here
+    pass
 
-    # Create candlestick chart using Plotly
-    candlestick_fig = go.Figure(data=[go.Candlestick(
-        x=data.index,
-        open=data['Open'],
-        high=data['High'],
-        low=data['Low'],
-        close=data['Close']
-    )])
+@app.callback(
+    Output('symbol-dropdown', 'options'),
+    Input('scan-button', 'n_clicks')
+)
+def scan_for_symbols(n_clicks):
+    if n_clicks > 0:
+        scanner = StockScanner()  # Initialize your scanner
+        symbols_with_signals = scanner.scan()  # Get symbols with buy/sell signals
+        return generate_dropdown_options(symbols_with_signals)
 
-    # Customize the layout of the candlestick chart
-    candlestick_fig.update_layout(
-        title=f'{selected_symbol} Candlestick Chart',
-        xaxis_title='Date',
-        yaxis_title='Price',
-        xaxis_rangeslider_visible=False
-    )
+@app.callback(
+    Output('candlestick-graph', 'figure'),
+    Input('symbol-dropdown', 'value')
+)
+def display_candlestick_graph(selected_symbol):
+    if selected_symbol:
+        # Fetch historical data for selected_symbol using yfinance
+        data = yf.download(selected_symbol, start='2023-01-01', progress=False)
+        
+        # Create candlestick chart using Plotly
+        fig = go.Figure(data=[go.Candlestick(
+            x=data.index,
+            open=data['Open'],
+            high=data['High'],
+            low=data['Low'],
+            close=data['Close']
+        )])
 
-    return candlestick_fig
+        # Add buy and sell signals to the chart (replace with your signals logic)
+        # Add backtest results (replace with your backtester logic)
+        # Customize the layout
+        
+        return fig
 
-# Run the app
 if __name__ == '__main__':
     app.run_server(debug=True)
-
