@@ -233,7 +233,4 @@ class StockScanner:
             except Exception as e:
                 print(f"Error fetching data for {symbol}: {e}")
                 pass
-        for  symbol in buy:
-             self.plot(symbol)
-        for  symbol in buy:
-             self.plot(symbol)
+        return buy,sell

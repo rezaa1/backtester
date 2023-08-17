@@ -77,7 +77,8 @@ def authenticate(n_clicks, entered_username, entered_password):
 def scan_for_symbols(n_clicks):
     if n_clicks > 0:
         scanner = StockScanner()  # Initialize your scanner
-        symbols_with_signals = scanner.scan()  # Get symbols with buy/sell signals
+        symbols_with_signals,sell = scanner.scan()  # Get symbols with buy/sell signals
+        symbols_with_signals.extend(sell)
         return generate_dropdown_options(symbols_with_signals)
 
 @app.callback(
