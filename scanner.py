@@ -123,11 +123,11 @@ class StockScanner:
     
     def save_data_to_csv(self, data, symbol):
         # Save the data to a CSV file
-        data.to_csv(f'/home/centos/stockdata/data/historical/{symbol}.csv')
+        data.to_csv(f'{symbol}.csv')
     
     def load_data_from_csv(self, symbol):
         # Load data from a CSV file
-        data = pd.read_csv(f'/home/centos/stockdata/data/historical/{symbol}.csv', index_col='Date', parse_dates=True)
+        data = pd.read_csv(f'{symbol}.csv', index_col='Date', parse_dates=True)
         return data
     
     def scan(self, symbol):

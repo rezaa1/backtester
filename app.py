@@ -2,6 +2,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
+from scanner import StockScanner  # Import your scanner class
 #from backtester import BackTester  # Import your backtester class
 import yfinance as yf
 import plotly.graph_objects as go
@@ -13,6 +14,34 @@ VALID_USERNAME_PASSWORD_PAIRS = {
     'user2': 'password2',
     'user3': 'password3'
 }
+
+app.layout = html.Div([
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='page-content')
+])
+
+login_layout = html.Div([
+    html.H1('Login'),
+    html.Div([
+        dcc.Input(id='username-input', placeholder='Username', type='text', style={'marginRight': '10px'}),
+        dcc.Input(id='password-input', placeholder='Password', type='password', style={'marginRight': '10px'}),
+        html.Button('Login', id='login-button', n_clicks=0)
+    ], style={'marginBottom': '20px'}),
+    html.Div(id='login-result')
+])
+
+main_layout = html.Div([
+    dcc.Dropdown(id='symbol-dropdown', options=[], placeholder='Select a symbol'),
+    html.Button('Scan', id='scan-button', n_clicks=0),
+    dcc.Graph(id='candlestick-graph')
+])
+
+@app.callback(Output('page-content', 'children'), Input('url', 'pathname'))
+def display_page(pathname):
+    if pathname == '/':
+        return login_layout
+    elif pathname == '/main':
+        return main_layout
 
 # Helper function to generate options for dropdown
 def generate_dropdown_options(symbols):
