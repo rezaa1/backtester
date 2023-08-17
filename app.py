@@ -2,8 +2,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
-from scanner import StockScanner  # Import your scanner class
-from backtester import BackTester  # Import your backtester class
+#from backtester import BackTester  # Import your backtester class
 import yfinance as yf
 import plotly.graph_objects as go
 
